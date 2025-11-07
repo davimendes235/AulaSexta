@@ -32,6 +32,11 @@ public class StudentService {
         if (studentRepository.existsByEmail(student.getEmail())) {
             throw new DuplicateResourceException("Student already exists with email: " + student.getEmail());
         }
+        if (student.getRegistrationNumber() != null 
+                && studentRepository.findByRegistrationNumber(student.getRegistrationNumber()).isPresent()) {
+            throw new DuplicateResourceException("Student already exists with registration number: " 
+                    + student.getRegistrationNumber());
+        }
         return studentRepository.save(student);
     }
 
@@ -42,6 +47,15 @@ public class StudentService {
         if (!student.getEmail().equals(studentDetails.getEmail()) 
                 && studentRepository.existsByEmail(studentDetails.getEmail())) {
             throw new DuplicateResourceException("Email already in use: " + studentDetails.getEmail());
+        }
+        
+        if (studentDetails.getRegistrationNumber() != null 
+                && !studentDetails.getRegistrationNumber().equals(student.getRegistrationNumber())) {
+            studentRepository.findByRegistrationNumber(studentDetails.getRegistrationNumber())
+                    .ifPresent(s -> {
+                        throw new DuplicateResourceException("Registration number already in use: " 
+                                + studentDetails.getRegistrationNumber());
+                    });
         }
         
         student.setName(studentDetails.getName());
